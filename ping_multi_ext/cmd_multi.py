@@ -29,6 +29,9 @@ def parse_argv():
 
     hosts = args['host'].copy()
 
+    if args['cidr'] is not None:
+        hosts = ping_multi_ext.lib.generate_hosts_cidr(args['cidr'])
+
     if args['file'] is not None:
         with open(args['file']) as f:
             for line in f:

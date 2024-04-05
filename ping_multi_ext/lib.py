@@ -1,9 +1,23 @@
 import argparse
 import shlex
 import ping_multi_ext # version
+import ipaddress
 
 def statistics_list():
     return ['Last', 'Loss%', 'Avg', 'Min', 'Max', 'StDev', 'RX_cnt', 'TX_cnt', 'XX_cnt']
+
+def generate_hosts_cidr(cidr):
+    try:
+        network_object = ipaddress.ip_network(cidr)
+        if isinstance(network_object, ipaddress.IPv6Network):
+            print('ping_multi: -g works only with IPv4 addresses')
+            exit()
+        host_addresses = [ str(ip_address) for ip_address in network_object.hosts() ]
+    except Exception as e:
+        print(e)
+        exit()
+
+    return host_addresses
 
 def argv_parser_base(prog_desc):
     parser = argparse.ArgumentParser(
@@ -19,6 +33,9 @@ def argv_parser_base(prog_desc):
     dval = 0
     parser.add_argument('--hosts-max-width', type=int, default=dval,
         help=f'maximum width of the hosts column; default={dval}')
+
+    parser.add_argument('-g,--generate', dest='cidr',
+        help=f'Generate a target list from supplied cidr')
 
     dval = statistics_list()[0]
     parser.add_argument('-s,--stat', dest='stats_show_initially', choices=statistics_list(),
